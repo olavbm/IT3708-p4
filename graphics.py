@@ -1,6 +1,5 @@
 import pygame
 import time
-
 from pygame import gfxdraw
 
 windowDimensions = [700, 700]
@@ -24,26 +23,29 @@ def drawGrid(surface, numGrid, cellSize):
         pygame.draw.aaline(windowSurface, colours["black"], (0, cellSize[1] * y), (700, cellSize[1] * y))
 
 # Draws a food-sprite in the given cell(ex. [1, 2]) on the given surface.
-def drawFood(surface, pos, r):
-    pos = [pos[0] * 70 + 35, pos[1] * 70 + 35]
+def drawFood(surface, pos, cellSize, r):
+    pos = [pos[0] * cellSize[0] + cellSize[0]/2, pos[1] * cellSize[1] + cellSize[1]/2]
     pygame.gfxdraw.filled_circle(windowSurface, pos[0], pos[1], r, colours["green"])
+
+    # Drawing nice anti-aliases circle around the circle.
     pygame.gfxdraw.aacircle(windowSurface, pos[0], pos[1], r, colours["black"])
 
 # Draws a poison-sprite in the given cell(ex. [4, 2]) on the given surface.
-def drawPoison(surface, pos, r):
-    pos = [pos[0] * 70 + 35, pos[1] * 70 + 35]
+def drawPoison(surface, pos, cellSize, r):
+    pos = [pos[0] * cellSize[0] + cellSize[0]/2, pos[1] * cellSize[1] + cellSize[1]/2]
     points = [[pos[0], pos[1] - r], [pos[0] + r, pos[1]], [pos[0], pos[1] + r], [pos[0] - r, pos[1]]]
     pygame.gfxdraw.filled_polygon(windowSurface, points, colours["red"])
 
+    # Drawing nice anti-aliased line around the polygon
     points = [[pos[0], pos[1] - r], [pos[0] + r, pos[1]], [pos[0], pos[1]+r], [pos[0]-r, pos[1]]]
     pygame.gfxdraw.aapolygon(windowSurface, points, colours["black"])
 
 # Finds what sprite needs to be drawn, and calls the according function to draw it in place.
-def drawRune(surface, rune, pos):
+def drawRune(surface, rune, pos, cellSize):
     if rune == "P":
-        drawPoison(surface, pos, 20)
+        drawPoison(surface, pos, cellSize, 20)
     elif rune == "F":
-        drawFood(surface, pos, 20)
+        drawFood(surface, pos, cellSize, 20)
     # Add other runes here when needed
 
 # Draws entire board, including background, lines and other sprites.
@@ -51,12 +53,12 @@ def drawBoardFromMatrix(surface, m, grid, cellSize):
     drawGrid(surface, grid, cellSize)
     for x in range(len(m)):
         for y in range(len(m[x])):
-            drawRune(surface, m[x][y], [x, y])
+            drawRune(surface, m[x][y], [x, y], cellSize)
 
 
 drawGrid(windowSurface, grid, cellSize)
-drawFood(windowSurface, [4, 2], 20)
-drawPoison(windowSurface, [1, 9], 20)
+drawFood(windowSurface, [4, 2], cellSize, 20)
+drawPoison(windowSurface, [1, 9], cellSize, 20)
 
 pygame.display.update()
 time.sleep(1)
