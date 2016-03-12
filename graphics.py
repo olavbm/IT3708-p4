@@ -6,7 +6,6 @@ windowDimensions = [700, 700]
 grid = [10, 10]
 cellSize = [windowDimensions[0]/grid[0], windowDimensions[1]/grid[1]]
 windowSurface = pygame.display.set_mode((windowDimensions[0], windowDimensions[1]), 0, 32)
-backDrop = pygame.Rect(0, 0, windowDimensions[0], windowDimensions[1])
 
 colours = {
         "black": (0, 0, 0),
@@ -52,6 +51,7 @@ gnomeSheet = calculateClauseSpritesFromSheet("clause.png")
 def calculatePosFromIndex(matrixIndex, cellSize):
     return [matrixIndex[0] * cellSize[0] + cellSize[0]/2, matrixIndex[1] * cellSize[1] + cellSize[1]/2]
 
+# Draws the entire grid, with background-color.
 def drawGrid(surface, numGrid, cellSize):
     surface.fill((255, 255, 255))
     for x in range(numGrid[0]):
@@ -82,7 +82,7 @@ def drawPoison(surface, matrixIndex, cellSize, r):
 def drawRune(surface, rune, matrixIndex, cellSize):
     if rune == 0:
         return
-    if rune == "P":
+    elif rune == "P":
         drawPoison(surface, matrixIndex, cellSize, 20)
     elif rune == "F":
         drawFood(surface, matrixIndex, cellSize, 20)
