@@ -1,3 +1,5 @@
+import random
+
 class Candidate(object):
     def __init__(self, gType):
         '''
@@ -25,15 +27,16 @@ class Population(object):
         self.candidate = candidate
         self.size = size
         self.maxGenerations = maxGenerations
-        self.population = self.generatePopulation(self.size)
+        self.population = self.initializePopulation(self.size)
 
     '''
     This needs some fixing. How do we initialize the ann, and with what
     kind of matrix? Should it just take care of that itself? But what with
     the gType then?
     '''
-    def initializeCandidate():
-        return self.candidate()
+    def initializeCandidate(self):
+        gType = "hei"
+        return self.candidate(gType)
 
     '''
     Initializes the population.
@@ -55,22 +58,38 @@ class Population(object):
             generation = generateGeneration()
 
     '''
-    Sum all fitnesses up to a number, µ.
-    Pick a number between 0 and µ.
+    Sum all fitnesses up to a number, a.
     For each candidate, sum the fitnesses.
-    If sumFitness > µ, you have your candidate.
+        Pick a number between 0 and a.
+        If sumFitness > a, you have your candidate.
     '''
-    def fitnessProportionateSelection():
-        pass
+    def fitnessProportionateSelection(self):
+        fitnessSum = 0
+        for candidate in self.population:
+            fitnessSum += candidates.fitness
 
-    def generateGeneration():
+        population =  []
+        for i in range(self.size):
+            currentCounter = 0
+            candidateRandomNumber = random.random() * fitnessSum
+
+            for candidate in self.population:
+                if currentCounter >=  candidateRandomNumber:
+                    population.append(candidate)
+                    break
+                else:
+                    currentCounter += candidate.fitness
+
+        return population
+
+    def generateGeneration(self):
         generation = []
         for i in range(self.size):
             generation.append(self.reproduction())
 
         return generation
 
-    def reproduction():
+    def reproduction(self):
         rand1 = int(random.random() * self.size -1)
         rand2 = int(random.random() * self.size -1)
         parent1 = self.population[rand1]
