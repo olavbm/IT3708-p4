@@ -1,5 +1,4 @@
 import pygame
-import time
 from pygame import gfxdraw
 
 windowDimensions = [700, 700]
@@ -23,8 +22,7 @@ offsetVec = {
 
 # Helper-function that collects individual sprites from a big spritesheet.
 def calculateClauseSpritesFromSheet(filename):
-    gnomeSheet = {
-            }
+    gnomeSheet = {}
     sheet = pygame.image.load("clause.png")
 
     sheet.set_clip(pygame.Rect(16, 8, 46, 57))
@@ -90,14 +88,14 @@ def drawRune(surface, rune, matrixIndex, cellSize):
         drawGnome(surface, matrixIndex, cellSize, rune)
     # Add other runes here when needed
 
+# Draws a gnome, in a given direction and cell.
+def drawGnome(surface, matrixIndex, cellSize, direction):
+    pos = calculatePosFromIndex(matrixIndex, cellSize)
+    surface.blit(gnomeSheet[direction], [a + b for a, b in zip(pos, offsetVec[direction])])
+
 # Draws entire board, including background, lines and other sprites.
 def drawBoardFromMatrix(surface, m, grid, cellSize):
     drawGrid(surface, grid, cellSize)
     for x in range(len(m)):
         for y in range(len(m[x])):
             drawRune(surface, m[x][y], [x, y], cellSize)
-
-# Draws a gnome, in a given direction and cell.
-def drawGnome(surface, matrixIndex, cellSize, direction):
-    pos = calculatePosFromIndex(matrixIndex, cellSize)
-    surface.blit(gnomeSheet[direction], [a + b for a, b in zip(pos, offsetVec[direction])])
