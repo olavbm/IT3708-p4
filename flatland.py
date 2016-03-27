@@ -38,7 +38,6 @@ def init_boards(num_boards, size, f, p):
 
     return boards
 
-
 # Get the position of the player from a board.
 def get_pos(board):
     for x in range(len(board)):
