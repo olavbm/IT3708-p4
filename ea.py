@@ -24,7 +24,7 @@ class Candidate(object):
             for x in range(len(y)):
                 if random.random() <= probability:
                     # mutation is done by moving the weight slightly up or
-                    # down. Might want to limit this.
+                    # down. Might want to bound this.
                     self.weights[y][x] += random.uniform(-1, 1) * 0.001
 
     # Simple crossover, prone to division-errors
@@ -33,11 +33,13 @@ class Candidate(object):
         self.weights = self.weights[:point] + other.weights[point:]
 
 class Population(object):
-    def __init__(self, candidate, size, max_generations):
+    def __init__(self, candidate, size, max_generations, probability, num_elites):
         self.candidate = candidate
         self.size = size
         self.max_generations = max_generations
         self.population = self.initialize_population()
+        self.probability = probability
+        self.num_elites = num_elites
 
     '''
     This needs some fixing. How do we initialize the ann, and with what
@@ -68,12 +70,13 @@ class Population(object):
             adults = self.adult_selection(population)
             parents = self.fitness_proportionate_selection(population)
             children = self.reproduction(parents)
+            elites = self.elitism(population)
 
             for child in children:
-                child.mutate()
+                child.mutate(self.probability)
                 child.calculate_fitness()
 
-            population = self.best_candidates(adults, children)
+            population = elites + self.best_candidates(adults, children)
 
         return population
 
@@ -116,7 +119,11 @@ class Population(object):
 
     # Returning the best candidates of adults and children
     def best_candidates(adults, children):
-        return sorted(adults + children, key=lambda c: c.fitness, reverse=True)[:self.size]
+        return sorted(adults + children, key=lambda c: c.fitness, reverse=True)[:self.size - self.num_elites]
+
+    # Keep the best n candidates in each generation
+    def elitism(self, population):
+        return sorted(population, key=lambda c: c.fitness, reverse=True)[:self.num_elites]
 
 def run():
     # It is possible to have many different candidates here.
