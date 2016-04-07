@@ -1,27 +1,43 @@
+import copy
 import random
+import neuron
+import flatland
+import ea_gtype
+import numpy as np
 
 class Candidate(object):
-    def __init__(self, gType):
+    def __init__(self, weights, timesteps):
         '''
         Create a new Candidate with 'gType'(possibly a matrix of floats).
         If there is a float in two indices, there is a connection between the nodes.
         '''
-        self.gType = gType
-        self.weights = [[]]
+        self.weights = ea_gtype.random_genotype()
         self.fitness = 0
+        self.timesteps = timesteps
 
     '''
     Fitness evaluation function.  
     Somehow needs to pass board to the ann for action-response.
     '''
     # TODO: Communicate with board and ann.
-    def calculate_fitness(self):
-        pass
+    def calculate_fitness(self, board):
+        score = 0
+        nn = neuron.Neural_net(self.weights)
+        for _ in range(self.timesteps):
+            stim = flatland.sensor_cells(board)
+            output = nn.act_on_input(stim)
+            board, rune = flatland.modify_on_action(board, output)
+
+            if rune == "F":
+                score += 2
+            elif rune == "P":
+                score -= 3
+        self.fitness = score
 
     # given a probability p, in p occurences, change the weight up or down slightly
     def mutate(self, probability):
         for y in range(len(self.weights)):
-            for x in range(len(y)):
+            for x in range(len(self.weights[y])):
                 if random.random() <= probability:
                     # mutation is done by moving the weight slightly up or
                     # down. Might want to bound this.
@@ -30,12 +46,16 @@ class Candidate(object):
     # Simple crossover, prone to division-errors
     def crossover(self, other):
         point = len(self.weights/2)
-        self.weights = self.weights[:point] + other.weights[point:]
+        self.weights = np.concatenate([self.weights[:point],other.weights[point:]])
+
+        return Candidate(self.weights, self.timesteps)
+
 
 class Population(object):
-    def __init__(self, candidate, size, max_generations, probability, num_elites):
+    def __init__(self, candidate, size, timesteps, max_generations, probability, num_elites):
         self.candidate = candidate
         self.size = size
+        self.timesteps = timesteps
         self.max_generations = max_generations
         self.population = self.initialize_population()
         self.probability = probability
@@ -47,8 +67,7 @@ class Population(object):
     the gType then?
     '''
     def initialize_candidate(self):
-        gType = "test"
-        return self.candidate(gType)
+        return self.candidate(ea_gtype.random_genotype(), self.timesteps)
 
     '''
     Initializes the population.
@@ -62,10 +81,12 @@ class Population(object):
         return population
 
     # TODO: Decision on what parent-selection-function to be used.
-    def evolve():
+    def evolve(self):
         population = self.population
+        board = flatland.create_board(10, 0.3, 0.3)
         for candidate in population:
-            candidate.calculate_fitness()
+            board_copy = copy.deepcopy(board)
+            candidate.calculate_fitness(board_copy)
         for i in range(self.max_generations):
             adults = self.adult_selection(population)
             parents = self.fitness_proportionate_selection(population)
@@ -73,15 +94,17 @@ class Population(object):
             elites = self.elitism(population)
 
             for child in children:
+                board_copy = copy.deepcopy(board)
                 child.mutate(self.probability)
-                child.calculate_fitness()
+                child.calculate_fitness(board_copy)
+
 
             population = elites + self.best_candidates(adults, children)
 
         return population
 
     # TODO: Implement how many adults we want to keep
-    def adult_selection(population):
+    def adult_selection(self, population):
         return []
 
     '''
@@ -93,7 +116,7 @@ class Population(object):
     def fitness_proportionate_selection(self, population):
         fitness_sum = 0
         for candidate in population:
-            fitness_sum += candidates.fitness
+            fitness_sum += candidate.fitness
 
         new_population =  []
         for i in range(len(population)):
@@ -110,15 +133,14 @@ class Population(object):
         return population
 
     # Returns a reproduciton of two completely random parents in the population
-    def reproduction(self):
-        parent1 = self.population[int(random.random() * self.size - 1)]
-        parent2 = self.population[int(random.random() * self.size - 1)]
-        child = parent1.crossover(parent2)
-
-        return child
+    def reproduction(self, parents):
+        new_population = []
+        for i in range(self.size):
+            new_population.append(parents[i].crossover(parents[int(random.random() * self.size - 1)]))
+        return new_population
 
     # Returning the best candidates of adults and children
-    def best_candidates(adults, children):
+    def best_candidates(self, adults, children):
         return sorted(adults + children, key=lambda c: c.fitness, reverse=True)[:self.size - self.num_elites]
 
     # Keep the best n candidates in each generation
@@ -126,13 +148,13 @@ class Population(object):
         return sorted(population, key=lambda c: c.fitness, reverse=True)[:self.num_elites]
 
 def run():
-    # It is possible to have many different candidates here.
-    class Example_candidate(Candidate):
-        # A specialized mutate-function for this exact problem and candidate.
-        def mutate(probability):
-            pass
-
     size = 100
     max_generations = 100
-    population = Population(Example_candidate, size, max_generations)
+    timesteps = 60
+    probability = 0.0000000001
+    num_elites = 2
+    population = Population(Candidate, size, timesteps, max_generations, probability, num_elites)
     result = population.evolve()
+
+if __name__ == '__main__':
+    run()
