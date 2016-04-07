@@ -1,3 +1,4 @@
+import copy
 import random
 import neuron
 import flatland
@@ -44,7 +45,6 @@ class Candidate(object):
 
     # Simple crossover, prone to division-errors
     def crossover(self, other):
-        print self, other
         point = len(self.weights/2)
         self.weights = np.concatenate([self.weights[:point],other.weights[point:]])
 
@@ -85,7 +85,8 @@ class Population(object):
         population = self.population
         board = flatland.create_board(10, 0.3, 0.3)
         for candidate in population:
-            candidate.calculate_fitness(board)
+            board_copy = copy.deepcopy(board)
+            candidate.calculate_fitness(board_copy)
         for i in range(self.max_generations):
             adults = self.adult_selection(population)
             parents = self.fitness_proportionate_selection(population)
@@ -93,8 +94,10 @@ class Population(object):
             elites = self.elitism(population)
 
             for child in children:
+                board_copy = copy.deepcopy(board)
                 child.mutate(self.probability)
-                child.calculate_fitness(board)
+                child.calculate_fitness(board_copy)
+
 
             population = elites + self.best_candidates(adults, children)
 
@@ -148,8 +151,8 @@ def run():
     size = 100
     max_generations = 100
     timesteps = 60
-    probability = 0.001
-    num_elites = 1
+    probability = 0.0000000001
+    num_elites = 2
     population = Population(Candidate, size, timesteps, max_generations, probability, num_elites)
     result = population.evolve()
 
