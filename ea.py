@@ -47,9 +47,7 @@ class Candidate(object):
     def crossover(self, other):
         point = len(self.weights/2)
         self.weights = np.concatenate([self.weights[:point],other.weights[point:]])
-
-        return Candidate(self.weights, self.timesteps)
-
+        return self
 
 class Population(object):
     def __init__(self, candidate, size, timesteps, max_generations, probability, num_elites):
