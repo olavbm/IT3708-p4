@@ -6,12 +6,12 @@ import ea_gtype
 import numpy as np
 
 class Candidate(object):
-    def __init__(self, weights, timesteps):
+    def __init__(self, timesteps):
         '''
         Create a new Candidate with 'gType'(possibly a matrix of floats).
         If there is a float in two indices, there is a connection between the nodes.
         '''
-        self.weights = weights
+        self.weights = ea_gtype.random_genotype()
         self.fitness = 0
         self.timesteps = timesteps
 
@@ -52,11 +52,10 @@ class Candidate(object):
 
 
 class Population(object):
-    def __init__(self, candidate, size, timesteps, max_generations, probability, num_elites, weight_dimensions):
+    def __init__(self, candidate, size, timesteps, max_generations, probability, num_elites):
         self.candidate = candidate
         self.size = size
         self.timesteps = timesteps
-        self.weight_dimensions = weight_dimensions
         self.max_generations = max_generations
         self.population = self.initialize_population()
         self.probability = probability
@@ -68,7 +67,7 @@ class Population(object):
     the gType then?
     '''
     def initialize_candidate(self):
-        return self.candidate(ea_gtype.random_genotype(self.weight_dimensions), self.timesteps)
+        return self.candidate(self.timesteps)
 
     '''
     Initializes the population.
@@ -154,8 +153,7 @@ def run():
     timesteps = 60
     probability = 0.0000000001
     num_elites = 2
-    weight_dimensions = [10, 10]
-    population = Population(Candidate, size, timesteps, max_generations, probability, num_elites, weight_dimensions)
+    population = Population(Candidate, size, timesteps, max_generations, probability, num_elites)
     result = population.evolve()
 
 if __name__ == '__main__':
