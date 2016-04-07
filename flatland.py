@@ -1,10 +1,10 @@
 import random
 
 pad = {
-        "U": (-1, 0),
-        "R": (0, 1),
-        "D": (1, 0),
-        "L": (0, -1),
+        "U": ( 0, -1),
+        "R": ( 1,  0),
+        "D": ( 0,  1),
+        "L": (-1,  0),
         }
 
 # Values in the sense_pad is given in the order: F L R according to the given
@@ -28,6 +28,11 @@ def create_board(size, f, p):
             elif random.random() < p:
                 board[x][y] = "P"
 
+    nisse_x = random.randrange(size)
+    nisse_y = random.randrange(size)
+
+    board[nisse_x][nisse_y] = random.choice('RULD')
+
     return board
 
 # For generating all boards being used on a ea-generation.
@@ -50,9 +55,15 @@ def get_pos(board):
 def modify_on_action(board, action):
     n = len(board)
     old_pos = get_pos(board)
+
+    action = rulf_to_ruld(action, board[old_pos[0]][old_pos[1]])
+    if not action:
+        return (board, '0')
+
     offset = pad[action]
     new_pos = ((old_pos[0] + offset[0]) % n, (old_pos[1] + offset[1]) % n)
     rune = board[new_pos[0]][new_pos[1]]
+
 
     board[new_pos[0]][new_pos[1]] = action
     board[old_pos[0]][old_pos[1]] = 0
@@ -72,40 +83,10 @@ def sensor_cells(board):
                 [(pos[1] + cell[1]) % n])
     return sensor_cells
 
+def rulf_to_ruld(rulf, init_ruld):
+    if rulf == 'U':
+        return  # nothing happens
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    t = 'URDL'.index(init_ruld)
+    d = 'LFR'.index(rulf)-1
+    return 'URDL'[(t+d) % 4]
