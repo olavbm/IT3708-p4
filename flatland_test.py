@@ -31,8 +31,8 @@ class TestFlatland(unittest.TestCase):
     def test_modify_board_eat_rune(self):
         board = flatland.create_board(5,0.3,0.1)
         board[1][1] = "U"
-        board[1][2] = "F"
-        board, rune = flatland.modify_on_action(board, "R")
+        board[1][0] = "F"
+        board, rune = flatland.modify_on_action(board, "F")
         self.assertEqual(rune, "F")
 
     def test_sensor_cells(self):
