@@ -6,7 +6,7 @@ import ea_gtype
 import numpy as np
 
 class Candidate(object):
-    def __init__(self, weights, timesteps):
+    def __init__(self, timesteps):
         '''
         Create a new Candidate with 'gType'(possibly a matrix of floats).
         If there is a float in two indices, there is a connection between the nodes.
@@ -67,7 +67,7 @@ class Population(object):
     the gType then?
     '''
     def initialize_candidate(self):
-        return self.candidate(ea_gtype.random_genotype(), self.timesteps)
+        return self.candidate(self.timesteps)
 
     '''
     Initializes the population.
