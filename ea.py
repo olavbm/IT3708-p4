@@ -1,9 +1,13 @@
+from collections import namedtuple
 import copy
-import random
-import neuron
-import flatland
-import ea_gtype
 import numpy as np
+import random
+
+import ea_gtype
+import flatland
+import neuron
+
+Generation = namedtuple('Generation', 'best_weights board timesteps')
 
 class Candidate(object):
     def __init__(self, timesteps):
@@ -99,7 +103,7 @@ class Population(object):
 
             population = elites + self.best_candidates(adults, children)
 
-        return population
+            yield Generation(elites[0].weights, board, 60)
 
     # TODO: Implement how many adults we want to keep
     def adult_selection(self, population):
@@ -152,7 +156,8 @@ def run():
     probability = 0.0000000001
     num_elites = 2
     population = Population(Candidate, size, timesteps, max_generations, probability, num_elites)
-    result = population.evolve()
+    for generation in population.evolve():
+        yield generation
 
 if __name__ == '__main__':
     run()
