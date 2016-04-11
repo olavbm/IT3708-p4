@@ -14,10 +14,12 @@ def loop(current_generation):
 
 def simulate(generation):
     nn = neuron.Neural_net(generation.best_weights)
-    board = generation.board
+    boards = generation.boards
 
-    for _ in range(generation.timesteps):
-        stim = flatland.sensor_cells(board)
-        output = nn.act_on_input(stim)
-        board, _ = flatland.modify_on_action(board, output)
-        yield board
+    for board in boards:
+        print board
+        for _ in range(generation.timesteps):
+            stim = flatland.sensor_cells(board)
+            output = nn.act_on_input(stim)
+            board, _ = flatland.modify_on_action(board, output)
+            yield board

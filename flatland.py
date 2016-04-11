@@ -37,8 +37,8 @@ def create_board(size, f, p):
     return board
 
 # For generating all boards being used on a ea-generation.
-def init_boards(num_boards, size, f, p):
-    boards = [[]]
+def create_boards(size, f, p, num_boards):
+    boards = []
     for i in range(num_boards):
         boards.append(create_board(size, f, p))
 
