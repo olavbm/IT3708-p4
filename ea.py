@@ -1,4 +1,5 @@
 from collections import namedtuple
+from operator import attrgetter as attr
 import copy
 import numpy as np
 import random
@@ -10,8 +11,11 @@ import neuron
 Generation = namedtuple('Generation', 'best_weights boards timesteps')
 
 class Candidate(object):
-    def __init__(self, timesteps):
-        self.weights = ea_gtype.random_genotype()
+    def __init__(self, timesteps, weights=None):
+        if weights is not None:
+            self.weights = weights
+        else:
+            self.weights = ea_gtype.random_genotype()
         self.fitness = 0
         self.timesteps = timesteps
 
@@ -42,10 +46,9 @@ class Candidate(object):
     def crossover(self, other):
         point = random.randrange(len(self.weights))
         if random.randint(0,1):
-            self.weights = np.concatenate([self.weights[:point],other.weights[point:]])
+            return Candidate(self.timesteps, np.concatenate([self.weights[:point],other.weights[point:]]))
         else:
-            self.weights = np.concatenate([other.weights[:point],self.weights[point:]])
-        return self
+            return Candidate(self.timesteps, np.concatenate([other.weights[:point],self.weights[point:]]))
 
 class Population(object):
     def __init__(self, candidate, size, timesteps, max_generations, probability, num_elites, run_type, num_boards):
@@ -132,6 +135,28 @@ class Population(object):
 
         return population
 
+    def sigma_scaling_selection(self, population):
+        fitnesses = map(attr('fitness'), population)
+        mu = np.mean(fitnesses)
+        sigma = np.std(fitnesses)
+        mu_sum = np.sum((fitnesses - mu)/(2*sigma) + 1)
+
+        new_population =  []
+        for i in range(len(population)):
+            current_counter = 0
+            candidate_random_number = random.random() * mu_sum
+
+            for _ in range(1):
+                parents = []
+                for candidate in population:
+                    current_counter += (1 + (candidate.fitness - mu) / (2 * sigma))
+                    if current_counter >=  candidate_random_number:
+                        parents.append(candidate)
+                        break
+                new_population.append(parents[0].crossover(parents[1]))
+
+        return population
+
     def reproduction(self, parents):
         new_population = []
         for i in range(self.size):
@@ -147,10 +172,10 @@ class Population(object):
         return sorted(population, key=lambda c: c.fitness, reverse=True)[:self.num_elites]
 
 def run(run_type, num_boards):
-    size = 100
+    size = 300
     max_generations = 100
     timesteps = 60
-    probability = 0.0000000001
+    probability = 0.01
     num_elites = 2
     population = Population(Candidate, size, timesteps, max_generations, probability, num_elites, run_type, num_boards)
     for generation in population.evolve():
