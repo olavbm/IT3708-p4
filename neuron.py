@@ -1,9 +1,13 @@
 import numpy as np
+from time import sleep
 
 iter_limit = 100
 
 def sigmoid(x):
     return 1/(1+np.exp(-x))
+
+def tanh(x):
+    return np.tanh(x)
 
 def runes_to_stim(runes):
     food = [rune == 'F' for rune in runes]
