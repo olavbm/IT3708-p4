@@ -75,10 +75,15 @@ class Population(object):
     def evolve(self):
         population = self.population
         boards = flatland.create_boards(10, 0.3, 0.3, self.num_boards)
+
         for candidate in population:
             boards_copy = copy.deepcopy(boards)
             candidate.calculate_fitness(boards_copy)
+
         for i in range(self.max_generations):
+            # Create new boards for each generation if this is a dynamic run
+            if self.run_type == "dynamic":
+                boards = flatland.create_boards(10, 0.3, 0.3, self.num_boards)
             adults = self.adult_selection(population)
             parents = self.fitness_proportionate_selection(population)
             children = self.reproduction(parents)
