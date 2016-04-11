@@ -7,35 +7,27 @@ import ea_gtype
 import flatland
 import neuron
 
-Generation = namedtuple('Generation', 'best_weights board timesteps')
+Generation = namedtuple('Generation', 'best_weights boards timesteps')
 
 class Candidate(object):
     def __init__(self, timesteps):
-        '''
-        Create a new Candidate with 'gType'(possibly a matrix of floats).
-        If there is a float in two indices, there is a connection between the nodes.
-        '''
         self.weights = ea_gtype.random_genotype()
         self.fitness = 0
         self.timesteps = timesteps
 
-    '''
-    Fitness evaluation function.  
-    Somehow needs to pass board to the ann for action-response.
-    '''
-    # TODO: Communicate with board and ann.
-    def calculate_fitness(self, board):
+    def calculate_fitness(self, boards):
         score = 0
         nn = neuron.Neural_net(self.weights)
-        for _ in range(self.timesteps):
-            stim = flatland.sensor_cells(board)
-            output = nn.act_on_input(stim)
-            board, rune = flatland.modify_on_action(board, output)
+        for board in boards:
+            for _ in range(self.timesteps):
+                stim = flatland.sensor_cells(board)
+                output = nn.act_on_input(stim)
+                board, rune = flatland.modify_on_action(board, output)
 
-            if rune == "F":
-                score += 2
-            elif rune == "P":
-                score -= 3
+                if rune == "F":
+                    score += 2
+                elif rune == "P":
+                    score -= 3
         self.fitness = score
 
     # given a probability p, in p occurences, change the weight up or down slightly
@@ -54,7 +46,7 @@ class Candidate(object):
         return self
 
 class Population(object):
-    def __init__(self, candidate, size, timesteps, max_generations, probability, num_elites):
+    def __init__(self, candidate, size, timesteps, max_generations, probability, num_elites, run_type, num_boards):
         self.candidate = candidate
         self.size = size
         self.timesteps = timesteps
@@ -62,12 +54,9 @@ class Population(object):
         self.population = self.initialize_population()
         self.probability = probability
         self.num_elites = num_elites
+        self.run_type = run_type
+        self.num_boards = num_boards
 
-    '''
-    This needs some fixing. How do we initialize the ann, and with what
-    kind of matrix? Should it just take care of that itself? But what with
-    the gType then?
-    '''
     def initialize_candidate(self):
         return self.candidate(self.timesteps)
 
@@ -85,10 +74,10 @@ class Population(object):
     # TODO: Decision on what parent-selection-function to be used.
     def evolve(self):
         population = self.population
-        board = flatland.create_board(10, 0.3, 0.3)
+        boards = flatland.create_boards(10, 0.3, 0.3, self.num_boards)
         for candidate in population:
-            board_copy = copy.deepcopy(board)
-            candidate.calculate_fitness(board_copy)
+            boards_copy = copy.deepcopy(boards)
+            candidate.calculate_fitness(boards_copy)
         for i in range(self.max_generations):
             adults = self.adult_selection(population)
             parents = self.fitness_proportionate_selection(population)
@@ -96,14 +85,13 @@ class Population(object):
             elites = self.elitism(population)
 
             for child in children:
-                board_copy = copy.deepcopy(board)
+                boards_copy = copy.deepcopy(boards)
                 child.mutate(self.probability)
-                child.calculate_fitness(board_copy)
-
+                child.calculate_fitness(boards_copy)
 
             population = elites + self.best_candidates(adults, children)
 
-            yield Generation(elites[0].weights, board, 60)
+            yield Generation(elites[0].weights, boards, 60)
 
     # TODO: Implement how many adults we want to keep
     def adult_selection(self, population):
@@ -134,7 +122,6 @@ class Population(object):
 
         return population
 
-    # Returns a reproduciton of two completely random parents in the population
     def reproduction(self, parents):
         new_population = []
         for i in range(self.size):
@@ -149,13 +136,13 @@ class Population(object):
     def elitism(self, population):
         return sorted(population, key=lambda c: c.fitness, reverse=True)[:self.num_elites]
 
-def run():
+def run(run_type, num_boards):
     size = 100
     max_generations = 100
     timesteps = 60
     probability = 0.0000000001
     num_elites = 2
-    population = Population(Candidate, size, timesteps, max_generations, probability, num_elites)
+    population = Population(Candidate, size, timesteps, max_generations, probability, num_elites, run_type, num_boards)
     for generation in population.evolve():
         yield generation
 
