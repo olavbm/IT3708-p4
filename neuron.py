@@ -18,7 +18,7 @@ def output_to_rulf(output):
     if max(output) < 0.3:
         return 'U'
 
-    return 'RLF'[np.where(output == max(output))[0]]
+    return 'RLF'[np.where(output == max(output))[0][0]]
 
 class Neural_net(object):
     def __init__ (self, weights):
