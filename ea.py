@@ -91,10 +91,13 @@ class Population(object):
             children = self.reproduction(parents)
             elites = self.elitism(population)
 
+            fitness_sum = 0
             for child in children:
                 boards_copy = copy.deepcopy(boards)
                 child.mutate(self.probability)
                 child.calculate_fitness(boards_copy)
+                fitness_sum += child.fitness
+            print fitness_sum
 
             population = elites + self.best_candidates(adults, children)
 
