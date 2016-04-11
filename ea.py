@@ -47,10 +47,12 @@ class Candidate(object):
                     # down. Might want to bound this.
                     self.weights[y][x] += random.uniform(-1, 1) * 0.001
 
-    # Simple crossover, prone to division-errors
     def crossover(self, other):
-        point = len(self.weights/2)
-        self.weights = np.concatenate([self.weights[:point],other.weights[point:]])
+        point = random.randrange(len(self.weights))
+        if random.randint(0,1):
+            self.weights = np.concatenate([self.weights[:point],other.weights[point:]])
+        else:
+            self.weights = np.concatenate([other.weights[:point],self.weights[point:]])
         return self
 
 class Population(object):
