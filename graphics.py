@@ -37,7 +37,13 @@ class Painter:
             pygame.draw.aaline(self.window_surface, self.colours["black"], (0, self.cell_size[1] * y), (700, self.cell_size[1] * y))
 
     # Draws a falling object in cell on surface. Does not handle the whole obejct, just a single square.
-    def draw_object(self, matrix_index):
+    # A small object is less than 5 squares in size
+    def draw_small_object(self, matrix_index):
+        pos = self.calculate_pos_from_index(matrix_index)
+        self.window_surface.fill(self.colours["green"], [pos[0] - self.cell_size[0]/2, pos[1] - self.cell_size[1]/2, self.cell_size[0], self.cell_size[1]])
+
+    # Draws a falling object in cell on surface. Does not handle the whole obejct, just a single square.
+    def draw_big_object(self, matrix_index):
         pos = self.calculate_pos_from_index(matrix_index)
         self.window_surface.fill(self.colours["red"], [pos[0] - self.cell_size[0]/2, pos[1] - self.cell_size[1]/2, self.cell_size[0], self.cell_size[1]])
 
@@ -50,8 +56,10 @@ class Painter:
     def draw_rune(self, rune, matrix_index):
         if rune == "N":
             return
-        elif rune == "O":
-            self.draw_object(matrix_index)
+        elif rune == "B":
+            self.draw_big_object(matrix_index)
+        elif rune == "S":
+            self.draw_small_object(matrix_index)
         elif rune == "A":
             self.draw_agent(matrix_index)
         # Add other runes here when needed
