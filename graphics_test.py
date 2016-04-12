@@ -4,7 +4,7 @@ import time
 import pygame
 
 class TestGraphics(unittest.TestCase):
-    def test_simple_graphics_from_matrix(self):
+    def test_single_graphics_from_matrix(self):
         matrix = [ ["N" for i in range(10)] for i in range(10)]
         matrix[3] = ["P" for i in range(10)]
 
@@ -13,9 +13,9 @@ class TestGraphics(unittest.TestCase):
 
         painter = graphics.Painter()
         painter.draw_board_from_matrix(matrix)
-        time.sleep(2)
+        time.sleep(1)
 
-    def test_simple_graphics_from_matrix(self):
+    def test_small_graphics_from_matrix(self):
         matrix = [ ["N" for i in range(30)] for i in range(15)]
 
         matrix[8][4] = "S"
@@ -30,7 +30,7 @@ class TestGraphics(unittest.TestCase):
         painter = graphics.Painter()
         painter.draw_board_from_matrix(matrix)
         time.sleep(1)
-    def test_simple_graphics_from_matrix(self):
+    def test_big_graphics_from_matrix(self):
         matrix = [ ["N" for i in range(30)] for i in range(15)]
 
         matrix[8][4] = "B"
@@ -47,7 +47,7 @@ class TestGraphics(unittest.TestCase):
 
         painter = graphics.Painter()
         painter.draw_board_from_matrix(matrix)
-        time.sleep(2)
+        time.sleep(1)
 
 if __name__ == '__main__':
     unittest.main()
