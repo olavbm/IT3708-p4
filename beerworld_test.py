@@ -41,13 +41,14 @@ class TestBeer(unittest.TestCase):
                     counter += 1
         assert counter == 5
 
-    def test_senros_cells(self):
+    def test_sensor_cells(self):
         beer = beerworld.Beer()
         cells = beer.sensor_cells()
-        print cells
+        print
         if 1 in cells:
             for x in beer.board:
                 print x
+            print cells
 
 if __name__ == '__main__':
     unittest.main()
