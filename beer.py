@@ -1,49 +1,13 @@
 import random
 
 pad = {
-        "U": ( 0, -1),
         "R": ( 1,  0),
         "D": ( 0,  1),
         "L": (-1,  0),
         }
 
-# Values in the sense_pad is given in the order: F L R according to the given
-# direction.
-sense_pad = {
-        "U": [pad["U"], pad["L"], pad["R"]],
-        "R": [pad["R"], pad["U"], pad["D"]],
-        "D": [pad["D"], pad["R"], pad["L"]],
-        "L": [pad["L"], pad["D"], pad["U"]],
-        }
 
-board = [[]]
-
-# Create a matrix holding a board of the given size.  Also fills the board with
-# food and poison in accordance to Flatland.
-def create_board(size, f, p):
-    board = [[0 for i in range(size)] for i in range(size)]
-    for x in range(len(board)):
-        for y in range(len(board[x])):
-            if random.random() < f:
-                board[x][y] = "F"
-            elif random.random() < p:
-                board[x][y] = "P"
-
-    nisse_x = random.randrange(size)
-    nisse_y = random.randrange(size)
-
-    board[nisse_x][nisse_y] = random.choice('RULD')
-
-    return board
-
-# For generating all boards being used on a ea-generation.
-def create_boards(size, f, p, num_boards):
-    boards = []
-    for i in range(num_boards):
-        boards.append(create_board(size, f, p))
-
-    return boards
-
+# Helper function to get the value of a position
 def index_board(board, pos):
     l = len(board)
     return board[pos[0] % l][pos[1] % l]
@@ -54,6 +18,50 @@ def get_pos(board):
         for y in range(len(board[x])):
             if index_board(board, (x, y)) in pad:
                 return [x, y]
+
+# Creates the board, with randomly spawned object and agent.
+def create_board(size):
+    board = [["N" for i in range(size[0])] for i in range(size[1])]
+    bottom = len(board)
+
+    board = spawn_agent(board)
+    board = spawn_object(board)
+
+    return board
+
+# Spawns an agent. The agent is always in the bottom row, only moving left or right.
+def spawn_agent(board):
+    start_pos = random.randint(0, len(board[0]))
+    agent_pos = [(start_pos + x) % len(board[0])  for x in range(5)]
+
+    for pos in agent_pos:
+        board[len(board) - 1][pos] = "A"
+
+    return board
+
+# Spawns an object, with random size and starting-position.
+# The object is considered Small(S) if it's size is less than 5, otherwise it is big.
+def spawn_object(board):
+    size = random.randint(1,6)
+    object_type = "S"
+    if size > 4:
+        object_type = "B"
+
+    start_pos = random.randint(0, len(board[0]))
+    object_pos = [(start_pos + x) % len(board[0]) for x in range(size)]
+
+    for pos in object_pos:
+        board[0][pos] = object_type
+
+    return board
+
+def fall(board):
+    for x in range(len(board) - 2):
+        if "S" in board[x] or "B" in board[x]:
+            board[x + 1] = [ c for c in board[x]]
+            board[x] = ["N" for i in range(len(board[0]))]
+            break
+    return board
 
 # For manipulating the board according to an action given by the ann. Gives
 # back anew board with the player moved, as well as the rune in the new square.
@@ -73,25 +81,8 @@ def modify_on_action(board, action):
     board[old_pos[0]][old_pos[1]] = 0
     return board, rune
 
-# Get the sensor-cells according to which position and direciton the player is
-# looking.
+# Get the new sensors cells in accordance with shadows made by the objects above.
 def sensor_cells(board):
-    n = len(board)
-    pos = get_pos(board)
-    direction = index_board(board, pos)
-    cells = sense_pad[direction]
-    sensor_cells = []
-    for cell in cells:
-        sensor_cells.append(
-                index_board(board, (pos[0] + cell[0],
-                                   pos[1] + cell[1]))
-                )
+
+
     return sensor_cells
-
-def rulf_to_ruld(rulf, init_ruld):
-    if rulf == 'U':
-        return  # nothing happens
-
-    t = 'URDL'.index(init_ruld)
-    d = 'LFR'.index(rulf)-1
-    return 'URDL'[(t+d) % 4]
