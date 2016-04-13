@@ -70,14 +70,19 @@ class Beer(object):
 
     # TODO: Might want to optimize and rewrite this code
     # For manipulating the board according to an action given by the ann. Gives
-    # back anew board with the player moved, as well as the reaction(e.
+    # back the reaction.
     def modify_on_action(self, action):
+        action = 2
         bottom = len(self.board) - 1
 
+        # We update the agen't positon corresponding with the given action
         start_index = action
-        self.agent_pos = [(self.agent_pos[i] + action) % 30 for i in range(len(self.agent_pos))]
+        self.agent_pos = [(agent_pos  + action) % 30 for agent_pos in self.agent_pos]
 
+        # Find if the new agent's position and the object's position are intersecting
         intersection = filter(lambda x: x in self.agent_pos, self.object_pos)
+
+        # If they are intersecting, find what response to give back to the callee, default "N"
         reaction = "N"
         if self.object_height == 0 and len(intersection) != 0:
             if len(self.object_pos) > 4:
@@ -96,12 +101,14 @@ class Beer(object):
                 bottom_list[(start_index + i) % len(self.board[bottom])] = "A"
 
         self.board[bottom] = bottom_list
+        print self.agent_pos , action
+        print self.board[bottom]
 
         if self.object_height == 0:
             self.spawn_object()
         else:
             self.fall()
-        return self.board, reaction
+        return reaction
 
     # Get the new sensors cells in accordance with shadows made by the objects above.
     def sensor_cells(self):
