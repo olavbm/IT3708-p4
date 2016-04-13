@@ -15,12 +15,6 @@ class Painter:
                 "red":   (255, 0 , 0),
                 "blue":   (0, 0 , 255)
             }
-        self.offset_vec = {
-                "U": [-25,-26],
-                "L": [-23,-29],
-                "R": [-25,-26],
-                "D": [-25,-28]
-            }
 
     # Helper-function that calculates a position in pixels given a matrix-index and cell size.
     def calculate_pos_from_index(self, matrix_index):
@@ -67,7 +61,9 @@ class Painter:
     # Draws entire board, including background, lines and other shapes
     def draw_board_from_matrix(self, matrix):
         self.draw_grid()
-        for x in range(len(matrix)):
-            for y in range(len(matrix[x])):
-                self.draw_rune(matrix[x][y], [x, y])
+        print "len matrix", len(matrix)
+        print "len matrix[0]",len(matrix[0])
+        for y in range(len(matrix[0])):
+            for x in range(len(matrix)):
+                self.draw_rune(matrix[x][y], [y, x])
         pygame.display.update()
