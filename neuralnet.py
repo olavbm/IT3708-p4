@@ -28,9 +28,7 @@ def random():
 
 def make_CTRNN(output_count=2):
     class CTRNN(object):
-        def __init__ (self, parameters=None):
-            if parameters is None:
-                parameters = random()
+        def __init__ (self, parameters):
             self.weight = parameters.weight
             self.gain = parameters.weight
             self.mass = parameters.mass
