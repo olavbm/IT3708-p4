@@ -4,6 +4,7 @@ import pprint
 import random
 import time
 import unittest
+import graphics
 
 class TestBeer(unittest.TestCase):
     def test_spawn_agent(self):
@@ -49,6 +50,15 @@ class TestBeer(unittest.TestCase):
             for x in beer.board:
                 print x
             print cells
+
+    def test_graphics_from_beerworld(self):
+        beer = beerworld.Beer()
+        painter = graphics.Painter()
+        painter.draw_board_from_matrix(beer.board)
+        print "len board", len(beer.board)
+        print "len board[0]", len(beer.board[0])
+        time.sleep(3)
+
 
 if __name__ == '__main__':
     unittest.main()
