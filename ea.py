@@ -4,11 +4,11 @@ import copy
 import numpy as np
 import random
 
+import beerworld
 import ea_gtype
-import flatland
 import neuron
 
-Generation = namedtuple('Generation', 'best_weights boards timesteps')
+Generation = namedtuple('Generation', 'best_weights board timesteps')
 
 class Candidate(object):
     def __init__(self, timesteps, weights=None):
@@ -19,19 +19,18 @@ class Candidate(object):
         self.fitness = 0
         self.timesteps = timesteps
 
-    def calculate_fitness(self, boards):
+    def calculate_fitness(self, beer):
         score = 0
         nn = neuron.Neural_net(self.weights)
-        for board in boards:
-            for _ in range(self.timesteps):
-                stim = flatland.sensor_cells(board)
-                output = nn.act_on_input(stim)
-                board, rune = flatland.modify_on_action(board, output)
+        for _ in range(self.timesteps):
+            stim = beer.sensor_cells()
+            output = nn.act_on_input(stim)
+            board, object_type  = beer.modify_on_action(output)
 
-                if rune == "F":
-                    score += 2
-                elif rune == "P":
-                    score -= 3
+            if object_type == "S":
+                score += 2
+            elif object_type == "B":
+                score -= 3
         self.fitness = score
 
     # given a probability p, in p occurences, change the weight up or down slightly
@@ -51,7 +50,7 @@ class Candidate(object):
             return Candidate(self.timesteps, np.concatenate([other.weights[:point],self.weights[point:]]))
 
 class Population(object):
-    def __init__(self, candidate, size, timesteps, max_generations, probability, num_elites, run_type, num_boards):
+    def __init__(self, candidate, size, timesteps, max_generations, probability, num_elites, run_type):
         self.candidate = candidate
         self.size = size
         self.timesteps = timesteps
@@ -60,7 +59,7 @@ class Population(object):
         self.probability = probability
         self.num_elites = num_elites
         self.run_type = run_type
-        self.num_boards = num_boards
+        self.beer = beerworld.Beer()
 
     def initialize_candidate(self):
         return self.candidate(self.timesteps)
@@ -79,16 +78,12 @@ class Population(object):
     # TODO: Decision on what parent-selection-function to be used.
     def evolve(self):
         population = self.population
-        boards = flatland.create_boards(10, 0.3, 0.3, self.num_boards)
+        board = self.beer.board
 
         for candidate in population:
-            boards_copy = copy.deepcopy(boards)
-            candidate.calculate_fitness(boards_copy)
+            candidate.calculate_fitness(self.beer)
 
         for i in range(self.max_generations):
-            # Create new boards for each generation if this is a dynamic run
-            if self.run_type == "dynamic":
-                boards = flatland.create_boards(10, 0.3, 0.3, self.num_boards)
             adults = self.adult_selection(population)
             parents = self.fitness_proportionate_selection(population)
             children = self.reproduction(parents)
@@ -96,15 +91,14 @@ class Population(object):
 
             fitness_sum = 0
             for child in children:
-                boards_copy = copy.deepcopy(boards)
                 child.mutate(self.probability)
-                child.calculate_fitness(boards_copy)
+                child.calculate_fitness(self.beer)
                 fitness_sum += child.fitness
             print fitness_sum
 
             population = elites + self.best_candidates(adults, children)
 
-            yield Generation(elites[0].weights, boards, 60)
+            yield Generation(elites[0].weights, self.beer.board, 60)
 
     # TODO: Implement how many adults we want to keep
     def adult_selection(self, population):
@@ -171,13 +165,13 @@ class Population(object):
     def elitism(self, population):
         return sorted(population, key=lambda c: c.fitness, reverse=True)[:self.num_elites]
 
-def run(run_type, num_boards):
-    size = 300
+def run(run_type):
+    size = 40
     max_generations = 100
-    timesteps = 60
+    timesteps = 600
     probability = 0.01
     num_elites = 2
-    population = Population(Candidate, size, timesteps, max_generations, probability, num_elites, run_type, num_boards)
+    population = Population(Candidate, size, timesteps, max_generations, probability, num_elites, run_type)
     for generation in population.evolve():
         yield generation
 
