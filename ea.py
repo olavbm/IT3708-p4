@@ -21,10 +21,11 @@ class Candidate(object):
 
     def calculate_fitness(self, beer):
         score = 0
-        nn = neuralnet.Neural_net(self.weights)
+        nn = Neural_net(self.parameters)
         for _ in range(self.timesteps):
-            stim = beer.sensor_cells()
+            stim = np.array(beer.sensor_cells())
             output = nn.act_on_input(stim)
+            output = int((output[0] - output[1]) * 8.0 - 4.0)
             object_type  = beer.modify_on_action(output)
 
             if object_type == "S":
