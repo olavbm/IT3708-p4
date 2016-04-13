@@ -12,7 +12,7 @@ def loop(current_generation):
         generation = current_generation.get()
         print("START")
         for i, step in enumerate(simulate(generation)):
-            painter.draw_board_from_matrix(step)
+            painter.draw_board(step)
             sleep(0.1)
             if i > 50:
                 break

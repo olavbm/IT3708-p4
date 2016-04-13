@@ -39,20 +39,23 @@ class Candidate(object):
             object_type  = beer.modify_on_action(output)
 
             if object_type == "S":
-                score += 1
+                score += 5
             elif object_type == "B":
-                score += 1
+                score += -15
         self.fitness = score
 
     # given a probability p, in p occurences, change the weight up or down slightly
     def mutate(self, probability):
         weight, gain, mass, bias = self.parameters
 
-        gain = random_change([1.0,5.0], probability)(gain)
-        mass = random_change([1.0,2.0], probability)(mass)
         weight = random_change([-5.0,5.0], probability)(weight)
         weight[0:2, 8:10] = 0
         weight[2:5, 0:5] = 0
+        gain = random_change([1.0,5.0], probability)(gain)
+        mass = random_change([1.0,2.0], probability)(mass)
+        bias = random_change([-10.0,0.0], probability)(bias)
+
+        self.parameters = neuralnet.NetParameters(weight, gain, mass, bias)
 
 
     def crossover(self, other):
@@ -104,7 +107,7 @@ class Population(object):
         for candidate in population:
             candidate.calculate_fitness(self.beer)
 
-        for i in range(self.max_generations):
+        while True:
             adults = self.adult_selection(population)
             parents = self.fitness_proportionate_selection(population)
             children = self.reproduction(parents)

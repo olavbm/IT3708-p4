@@ -30,38 +30,27 @@ class Painter:
         for y in range(self.grid[1]):
             pygame.draw.aaline(self.window_surface, self.colours["black"], (0, self.cell_size[1] * y), (700, self.cell_size[1] * y))
 
-    # Draws a falling object in cell on surface. Does not handle the whole obejct, just a single square.
-    # A small object is less than 5 squares in size
-    def draw_small_object(self, matrix_index):
-        pos = self.calculate_pos_from_index(matrix_index)
-        self.window_surface.fill(self.colours["green"], [pos[0] - self.cell_size[0]/2, pos[1] - self.cell_size[1]/2, self.cell_size[0], self.cell_size[1]])
+    def draw_rect(self, color, x, y, w):
+        self.window_surface.fill(self.colours[color],
+                [self.cell_size[0] * x, self.cell_size[1] * y, self.cell_size[0] * w, self.cell_size[1]])
+        if (x + w) > self.grid[0]:
+            self.draw_rect(color, 0, self.grid[1], (x + w) % self.grid[0])
 
-    # Draws a falling object in cell on surface. Does not handle the whole obejct, just a single square.
-    def draw_big_object(self, matrix_index):
-        pos = self.calculate_pos_from_index(matrix_index)
-        self.window_surface.fill(self.colours["red"], [pos[0] - self.cell_size[0]/2, pos[1] - self.cell_size[1]/2, self.cell_size[0], self.cell_size[1]])
+    def draw_tracker(self, tracker_pos):
+        self.draw_rect('blue', tracker_pos, self.grid[1], 5)
 
-    # Draws an agent on the surface. Does not handle the whole agent, just a single square.
-    def draw_agent(self, matrix_index):
-        pos = self.calculate_pos_from_index(matrix_index)
-        self.window_surface.fill(self.colours["blue"], [pos[0] - self.cell_size[0]/2, pos[1] - self.cell_size[1]/2, self.cell_size[0], self.cell_size[1]])
+    def draw_object(self, object_pos, object_width, object_height):
+        if object_width > 4:
+            color = 'red'
+        else:
+            color = 'green'
 
-    # Finds what sprite needs to be drawn, and calls the according function to draw it in place.
-    def draw_rune(self, rune, matrix_index):
-        if rune == "N":
-            return
-        elif rune == "B":
-            self.draw_big_object(matrix_index)
-        elif rune == "S":
-            self.draw_small_object(matrix_index)
-        elif rune == "A":
-            self.draw_agent(matrix_index)
-        # Add other runes here when needed
+        self.draw_rect(color, object_pos, self.grid[1] - object_height, object_width)
+
 
     # Draws entire board, including background, lines and other shapes
-    def draw_board_from_matrix(self, matrix):
+    def draw_board(self, things):
         self.draw_grid()
-        for y in range(len(matrix[0])):
-            for x in range(len(matrix)):
-                self.draw_rune(matrix[x][y], [y, x])
+        self.draw_object(things['object_pos'], things['object_width'], things['object_height'])
+        self.draw_tracker(things['tracker_pos'])
         pygame.display.update()
