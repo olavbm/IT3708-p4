@@ -24,6 +24,6 @@ def simulate(generation):
     for _ in range(generation.timesteps):
         stim = beer.sensor_cells()
         output = nn.act_on_input(stim)
-        output = round((output[0] - output[1]) * 8.0 - 4.0)
+        output = int(round((output[0] - output[1]) * 8.0 - 4.0))
         beer.modify_on_action(output)
         yield beer.board

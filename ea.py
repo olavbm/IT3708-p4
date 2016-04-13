@@ -35,7 +35,7 @@ class Candidate(object):
         for _ in range(self.timesteps):
             stim = np.array(beer.sensor_cells())
             output = nn.act_on_input(stim)
-            output = int((output[0] - output[1]) * 8.0 - 4.0)
+            output = int(round((output[0] - output[1]) * 8.0 - 4.0))
             object_type  = beer.modify_on_action(output)
 
             if object_type == "S":
