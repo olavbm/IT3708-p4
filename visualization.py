@@ -1,6 +1,6 @@
 from time import sleep
 
-import flatland
+import beerworld
 import graphics
 import neuron
 
@@ -14,12 +14,10 @@ def loop(current_generation):
 
 def simulate(generation):
     nn = neuron.Neural_net(generation.best_weights)
-    boards = generation.boards
+    beer = beerworld.Beer()
 
-    for board in boards:
-        print board
-        for _ in range(generation.timesteps):
-            stim = flatland.sensor_cells(board)
-            output = nn.act_on_input(stim)
-            board, _ = flatland.modify_on_action(board, output)
-            yield board
+    for _ in range(generation.timesteps):
+        stim = beer.sensor_cells()
+        output = nn.act_on_input(stim)
+        beer.modify_on_action(output)
+        yield beer.board
