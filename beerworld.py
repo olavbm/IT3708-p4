@@ -72,7 +72,6 @@ class Beer(object):
     # For manipulating the board according to an action given by the ann. Gives
     # back the reaction.
     def modify_on_action(self, action):
-        action = 2
         bottom = len(self.board) - 1
 
         # We update the agen't positon corresponding with the given action
