@@ -5,23 +5,23 @@ import numpy as np
 import random
 
 import beerworld
-import ea_gtype
-import neuron
+import neuralnet
 
 Generation = namedtuple('Generation', 'best_weights board timesteps')
+Neural_net = neuralnet.make_CTRNN()
 
 class Candidate(object):
-    def __init__(self, timesteps, weights=None):
-        if weights is not None:
-            self.weights = weights
+    def __init__(self, timesteps, parameters=None):
+        if parameters is not None:
+            self.parameters = parameters
         else:
-            self.weights = ea_gtype.random_genotype()
+            self.parameters = neuralnet.random()
         self.fitness = 0
         self.timesteps = timesteps
 
     def calculate_fitness(self, beer):
         score = 0
-        nn = neuron.Neural_net(self.weights)
+        nn = neuralnet.Neural_net(self.weights)
         for _ in range(self.timesteps):
             stim = beer.sensor_cells()
             output = nn.act_on_input(stim)
