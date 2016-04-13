@@ -26,7 +26,7 @@ def main():
     coproc(visualization.loop, current_generation)
 
     for generation in ea.run(run_type):
-        print(generation)
+        print(generation.best_parameters)
         current_generation.put(generation)
 
 if __name__ == '__main__':

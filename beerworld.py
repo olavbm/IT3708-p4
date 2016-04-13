@@ -101,8 +101,6 @@ class Beer(object):
                 bottom_list[(start_index + i) % len(self.board[bottom])] = "A"
 
         self.board[bottom] = bottom_list
-        print self.agent_pos , action
-        print self.board[bottom]
 
         if self.object_height == 0:
             self.spawn_object()

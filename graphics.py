@@ -61,8 +61,6 @@ class Painter:
     # Draws entire board, including background, lines and other shapes
     def draw_board_from_matrix(self, matrix):
         self.draw_grid()
-        print "len matrix", len(matrix)
-        print "len matrix[0]",len(matrix[0])
         for y in range(len(matrix[0])):
             for x in range(len(matrix)):
                 self.draw_rune(matrix[x][y], [y, x])

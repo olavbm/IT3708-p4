@@ -7,8 +7,18 @@ import random
 import beerworld
 import neuralnet
 
-Generation = namedtuple('Generation', 'best_weights board timesteps')
+Generation = namedtuple('Generation', 'best_parameters board timesteps')
 Neural_net = neuralnet.make_CTRNN()
+
+def random_change((a,b), probability):
+    def f(x):
+        if random.random() < probability:
+            r = b - a;
+            z = random.uniform(-r, r)
+            x += z
+            x = max(a,(min(b,(x))))
+        return x
+    return np.vectorize(f)
 
 class Candidate(object):
     def __init__(self, timesteps, parameters=None):
@@ -29,26 +39,36 @@ class Candidate(object):
             object_type  = beer.modify_on_action(output)
 
             if object_type == "S":
-                score += 2
+                score += 1
             elif object_type == "B":
-                score -= 3
+                score += 1
         self.fitness = score
 
     # given a probability p, in p occurences, change the weight up or down slightly
     def mutate(self, probability):
-        for y in range(len(self.weights)):
-            for x in range(len(self.weights[y])):
-                if random.random() <= probability:
-                    # mutation is done by moving the weight slightly up or
-                    # down. Might want to bound this.
-                    self.weights[y][x] += random.uniform(-1, 1) * 0.001
+        weight, gain, mass, bias = self.parameters
+
+        gain = random_change([1.0,5.0], probability)(gain)
+        mass = random_change([1.0,2.0], probability)(mass)
+        weight = random_change([-5.0,5.0], probability)(weight)
+        weight[0:2, 8:10] = 0
+        weight[2:5, 0:5] = 0
+
 
     def crossover(self, other):
-        point = random.randrange(len(self.weights))
         if random.randint(0,1):
-            return Candidate(self.timesteps, np.concatenate([self.weights[:point],other.weights[point:]]))
-        else:
-            return Candidate(self.timesteps, np.concatenate([other.weights[:point],self.weights[point:]]))
+            self, other = other, self
+
+        point = random.randrange(len(self.parameters.weight))
+
+        weight = np.concatenate((self.parameters.weight[:point], other.parameters.weight[point:]))
+        gain   = np.concatenate((self.parameters.gain  [:point], other.parameters.gain  [point:]))
+        mass   = np.concatenate((self.parameters.mass  [:point], other.parameters.mass  [point:]))
+        bias   = np.concatenate((self.parameters.bias  [:point], other.parameters.bias  [point:]))
+
+        parameters = neuralnet.NetParameters(weight, gain, mass, bias)
+
+        return Candidate(self.timesteps, parameters)
 
 class Population(object):
     def __init__(self, candidate, size, timesteps, max_generations, probability, num_elites, run_type):
@@ -99,7 +119,7 @@ class Population(object):
 
             population = elites + self.best_candidates(adults, children)
 
-            yield Generation(elites[0].weights, self.beer.board, 60)
+            yield Generation(elites[0].parameters, self.beer.board, 60)
 
     # TODO: Implement how many adults we want to keep
     def adult_selection(self, population):
